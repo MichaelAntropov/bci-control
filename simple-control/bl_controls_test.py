@@ -2,8 +2,14 @@
 from tkinter import *
 from tkinter.ttk import *
 
+import serial
+
 running = False
 jobid = ""
+directions = {"FORWARD": b'1',
+              "BACK": b'2',
+              "LEFT": b'3',
+              "RIGHT": b'4'}
 
 
 def start_motor(direction):
@@ -19,10 +25,13 @@ def stop_motor():
 
 def move(direction):
     global jobid
-    print("Moving (%s)" % direction)
-    jobid = root.after(100, move, direction)
+    print(f"Moving ({direction}[{directions[direction]}])")
+    ser.write(directions[direction])
+    jobid = root.after(70, move, direction)
 
 
+# Connecting to Model's Bluetooth
+ser = serial.Serial('COM7', 9600, timeout=0, parity=serial.PARITY_EVEN, rtscts=1)
 # creating main tkinter window/toplevel
 root = Tk()
 root.geometry("400x300")
