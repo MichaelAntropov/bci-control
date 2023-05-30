@@ -1,5 +1,4 @@
 from pylsl import StreamInlet, resolve_stream
-from time import sleep
 
 import serial
 
