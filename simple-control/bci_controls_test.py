@@ -1,5 +1,4 @@
 from pylsl import StreamInlet, resolve_stream
-from time import sleep
 
 # Gets data from BCI GUI LSL stream and outputs directions
 # Best to use 8 channels when Focus Widget is used
