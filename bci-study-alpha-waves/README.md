@@ -3,17 +3,21 @@ BCI study: Alpha Waves
 
 ### Contents
 
-1. Description
-3. Experiment
-    - Setup
-    - Follow experimeent
-    - Pypelines
+1. [Description](#description)
+2. [Experiment](#experiment)
+    - [Setup](#setup)
+    - [Follow experiment](#follow-experiment)
+      - [OpenBCI GUI](#openbci-gui)
+      - [Experiment recorder](#experiment-recorder)
+      - [Neuropype Pipelines](#neuropype-pypelines)
+      - [Control RC tank](#control-rc-tank)
+3. [Pypelines](#pypelines)
 
 
 Description
 ---
 
-This readme describes experiment setup, how to follow throgh and explanation on individual parts in the experiment. 
+This readme describes experiment setup, how to follow through and explanation on individual parts in the experiment. 
 Note that licensed software is used, although it is free for academic use.
 
 
@@ -21,7 +25,7 @@ Experiment
 ---
 
 ### Setup
-For the eperiment following is needed:
+For the experiment following is needed:
 
 - Assembled Ultracortex Mark 4 helmet
 - OpenBCI GUI
@@ -33,7 +37,7 @@ Ultracortex Mark 4 helmet:
 
 In order to achieve  follow this experiment position of the sensors in the helmet has to be changed.
 It is done in order to get better readings from occipital region of the brain.
-Guide to change position of the sensors can be found [here]().
+Guide to change position of the sensors can be found [here](../bci-occipital-sensor-reposition/README.md).
 
 Experiment recorder setup:
 - Go to root folder where Experiment Recorder is installed
@@ -87,26 +91,26 @@ After recording data into `.xdf` file you can open `1_AlphaWavesOfflineReview.py
 as if it is 'online' and enable/disabe plots as needed. 
 This pypeline is mostly for a revision.
 
-__Note:__ For the file name use full path, file name should be inserted as raw 
+__Note:__ For the file name use the full path, file name should be inserted as raw 
 python string - `r'filename'` or `r"filename"`
 
-Next is `2_AlphaWavesOfflineFrequencyRange.pyp` this one is importand to run to see if there is any artifacts/noise 
+Next is `2_AlphaWavesOfflineFrequencyRange.pyp` this one is important to run to see if there is any artifacts/noise 
 in frequency plot and the pypeline will also give the 'range' of alpha waves for the person.
 Note, that given range from pypeline might be far from optimal and ultimately should be judged 
 by the experimintator using spectrum plots.
 Ususally, though, it is 8-12 Hz range.
 
-After using previous pypeline to analyze avareage spectrum plots and define alpha-waves frequncy range you can
+After using previous pypeline to analyze average spectrum plots and define alpha-waves frequncy range you can
 run  `4_AlphaWavesOnlineWakefulRelaxationResult.pyp`. 
 This pypeline is supposed to work on streamed data. 
-It takes `obci_eeg1` stream, runs it throuh pypeline and outputs result to LSL stram again as 0.0 - 1.0 value.
-Bigger value means more neurons are syncronised and produce EEG signals in 8-12 Hz, alpha waves.
+It takes `obci_eeg1` stream, runs it through pypeline and outputs result to LSL stram again as 0.0 - 1.0 value.
+Bigger value means more neurons are synchronised and produce EEG signals in 8-12 Hz, alpha waves.
 
 Pypeline under name `3_AlphaWavesOfflineWakefulRelaxationReview.pyp` allows you to run `xdf` recording and 
 and have the same result/output as if running `4_AlphaWavesOnlineWakefulRelaxationResult.pyp`, just without 
 feeding live data to Neuropype and just using a recording file.
 
-#### Connecting to RC tank
+#### Control RC tank
 
 ### Pypelines
 

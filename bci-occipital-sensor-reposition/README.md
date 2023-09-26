@@ -10,7 +10,7 @@ If assembly of OpenBCI Iltracortex Mk4 helmet was done following this [guide](ht
 
 ![Electrodes Locations](media/electrode_locations.jpg)
 
-When streamed with LSL protocol the the streamed data has following order:
+When streamed with LSL protocol the streamed data has the following order:
 ```
 ['fp1','fp2','c3','c4','p7','p8','o1','o2','f7','f8','f3','f4','t7','t8','p3','p4']
 ```
