@@ -1,0 +1,95 @@
+[Input]
+# source: lsl (if taking an LSL stream) or cgx (if connecting directly to a CGX device)
+source: lsl
+# if source is LSL, specify the LSL stream name here (ignored if source=cgx)
+lsl_stream: obci_eeg1
+# lsl_stream_two:
+# lsl_stream_three:
+# lsl_stream_four:
+# uncomment the following if you want to restrict LSL stream discovery to the current host
+# (useful if you have multiple instances of ER running on the same LAN and you don't want to cross streams)
+lsl_localhost_only: false
+# if source is cgx, specify the device name here (ignored if eeg_source=lsl)
+# cgx_device: Quick-20r
+
+[Output]
+# the absolute path to where the recorded XDF files should be saved
+# use __HOMEPATH__ to replace with the user home folder
+# (any environ var can be used using syntax __ENV-VAR-NAME__)
+recordings_dir: \Data\ExperimentRecorder\SimpleAlphaWavesStudy\recordings
+# default settings
+subject_id: 1
+group_id: 1
+session_id: 1
+
+[Diagnostics]
+# settings related to signal quality check
+# whether to run the quality check during the task
+quality_check_during_task: false
+# if necessary to downsample the signal data to improve performance, specify the target downsample factor here
+downsample_factor: 2
+
+[Study]
+# title of study that appears in the GUI
+study_title: Simple Alpha Waves Study
+# number of seconds between tasks
+inter_task_pause: 0
+# generate Insights reports locally (Insights build only)
+insights_reports: false
+# uncommenting and setting this to True allows you to do a dry run of the task without checking for signal data
+# WARNING IF THIS IS TRUE NO DATA WILL BE CAPTURED/RECORDED!
+dry_run: false
+# whether ER will exit when the tasks are complete or bring up its dialog window
+exit_on_completion: false
+# whether the session notes dialog box will pop up at the end of a task
+show_session_notes_dialog: false
+
+[Metadata]
+# metadata that can be entered by the experimenter and which will be saved in the XDF
+# XDF file for each task in this session; each entry in this section will automatically
+# create an input box in the Session dialog, with the default value shown here (optional).
+# Nested field names are supported, which correspond to nested tags in the XDF / LSL specification.
+# Use a period to separate nested field names.
+# The top level field names must be one of the following: experiment, subject, cap, acquisition
+# You can specify any sub-level field names you want, though we recommend using those in the XDF spec if already there.
+# Some examples (uncomment and change as desired):
+# subject.handedness: left
+# subject.hair.color: brown
+# acquisition.protocol:
+# cap.size: 58
+# experiment.variant:
+
+[Window]
+# the position of the task window in pixels, as x/y, relative to the top/left of the screen
+window_position: 0/0
+# the size of the task window, in pixels as widthxheight
+# window_size: 1920x1080
+# hide the window border
+no_border: true
+# hide the mouse cursor
+no_cursor: true
+# show the task as a fullscreen (may not work as expected in some display configurations)
+fullscreen: false
+
+[Neuroscale]
+upload_to_neuroscale: false
+# your credentials for uploading files to Neuroscale
+s3_account:
+s3_credentials:
+s3_bucket:
+
+[Tasks]
+# list of tasks to be performed, in this order
+# if unspecified, all tasks found in /configs folder will be shown in a dropdown
+# the key is the is the human readable title in the GUI, the value is the name of the .cfg file to launch
+# examples:
+# Visual Arrest: visual_arrest_5min
+# Flanker: flanker_chevrons
+# Stroop: stroop
+# ChangeDetection: change_detection
+# GoNoGo: go_no_go
+# NullTask: null_phases_events
+# MIST: mist_long
+# N-back: n_back
+# RestingState: resting_state
+Alpha Waves Calibration: alpha_waves_calibration
