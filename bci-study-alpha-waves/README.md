@@ -114,7 +114,15 @@ feeding live data to Neuropype and just using a recording file.
 
 #### Control RC tank
 
-WIP...
+To control RC tank you need to do these steps:
+
+- Turn on RC tank and bluetooth on your PC
+- Find a device called `HC-06` and connect to it (password is 1111)
+- Open `OpenBCI` and launch lsl stream of filtered time series. Stream should be named `obci_eeg1`
+- Run `4_AlphaWavesOnlineWakefulRelaxationResult.pyp` pypeline
+- Run `bci_bl_control_alpha_study.py` script from `"simple-control/src/bci_bl_control"`
+
+That's all, you are running an experiment now.
 
 ### Pypelines
 
