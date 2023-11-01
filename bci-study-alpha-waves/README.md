@@ -124,7 +124,7 @@ To control RC tank you need to do these steps:
 - Put helmet on head
 - Turn on RC tank (power and motor switch) -> HC-06 model should blink
 - Turn on bluetooth  -> connect to HC-06 (password is 1234)
-- Run `4_AlphaWavesOnlineWakefulRelaxationResult.pyp`pypeline
+- Run `4_AlphaWavesOnlineWakefulRelaxationResult.pyp` pypeline
 - Run `bci_bl_control_alpha_study.py` -> choose correct COM port
 - Lower treshold values if you need
 
