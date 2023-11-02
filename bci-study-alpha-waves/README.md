@@ -116,7 +116,7 @@ feeding live data to Neuropype and just using a recording file.
 
 To control RC tank you need to do these steps:
 
-- Turn on helmet (PC mode), input the DONGLE
+- Turn on helmet (PC mode), input the dongle from cyton board to usb
 - Open BCI GUI
 - Start 16 channels
 - Select widgets - EEG, FFT, NETWORKING
@@ -124,9 +124,10 @@ To control RC tank you need to do these steps:
 - Put helmet on head
 - Turn on RC tank (power and motor switch) -> HC-06 model should blink
 - Turn on bluetooth  -> connect to HC-06 (password is 1234)
-- Run `4_AlphaWavesOnlineWakefulRelaxationResult.pyp` pypeline
-- Run `bci_bl_control_alpha_study.py` -> choose correct COM port
-- Lower treshold values if you need
+    - If it already 'paired' -> remove device and pair again
+- Run [4_AlphaWavesOnlineWakefulRelaxationResult.pyp](./pypelines/4_AlphaWavesOnlineWakefulRelaxationResult.pyp) pypeline
+- Run [bci_bl_control_alpha_study.py](../simple-control/src/bci_bl_control/bci_bl_control_alpha_study.py) -> choose correct COM port
+- Lower treshold values if you need [(sample_result[0] > 0.8 (40th line))](../simple-control/src/bci_bl_control/bci_bl_control_alpha_study.py) 
 
 That's all, you are running an experiment now.
 
