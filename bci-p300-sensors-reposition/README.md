@@ -1,0 +1,3 @@
+# P300 Region Study (OpenBCI)
+
+todo...
