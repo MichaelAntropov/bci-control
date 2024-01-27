@@ -5,22 +5,22 @@ class Main(LatentModule):
     def __init__(self):
         LatentModule.__init__(self)
 
-        self.a = [(20, 0.2), (20, 0.25), (20, 0.3), (20, 0.4)]
+        self.blocks = [(20, 0.2), (20, 0.25), (20, 0.3), (20, 0.4)]
         self.time_between_blocks = 5
 
     def run(self):
 
-        elements = ("pics\\sq.jpg","pics\\sq2.jpg");
+        elements = ("pics\\sq.jpg","pics\\sq2.jpg")
         black = (0, 0, 0, 1)
         self.write('P300 response experiment', 3, align='center', pos=(0, 0), scale=0.12,
                    fg=black)
 
         whole_time = 0
 
-        for block in self.a:
+        for block in self.blocks:
             whole_time += block[0]
 
-        whole_time += self.time_between_blocks * (len(self.a) - 1)
+        whole_time += self.time_between_blocks * (len(self.blocks) - 1)
 
         task_text = self.write(f'''
                                 
@@ -40,7 +40,7 @@ class Main(LatentModule):
                 task_text.destroy()
                 break
 
-        for block in self.a:
+        for block in self.blocks:
             self.marker("block-start")
             self.write("Block start", duration=3, align='center', pos=(0, 0), scale=0.12, fg=black)
             tries = round(block[0]/block[1])
