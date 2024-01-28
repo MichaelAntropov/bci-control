@@ -24,14 +24,14 @@ It is important since we will be moving sensors and will have to 'relabel' chann
 
 The new location of the sensors will be moved as follows:
 
-| Original |    | New | Ch No. |   |
-|:--------:|:--:|:---:|:------:|:-:|
-|    T8    | -> | Oz  |   14   |   |
-|    O1    | -> | Po5 |   7    |   |
-|    O2    | -> | Po6 |   8    |   |
-|    T7    | -> | Pz  |   13   |   |
-|    F4    | -> | Fz  |   12   |   |
-|    F3    | -> | Cz  |   11   |   |
+| Original |    | New | Ch No. |
+|:--------:|:--:|:---:|:------:|
+|    T8    | -> | Oz  |   14   |
+|    O1    | -> | Po5 |   7    |
+|    O2    | -> | Po6 |   8    |
+|    T7    | -> | Pz  |   13   |
+|    F4    | -> | Fz  |   12   |
+|    F3    | -> | Cz  |   11   |
 
  When streamed with LSL protocol, the streamed data has the following order:
 

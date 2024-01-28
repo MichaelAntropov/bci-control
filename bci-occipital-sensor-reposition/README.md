@@ -24,12 +24,12 @@ It is important since we will be moving sensors and will have to 'relabel' chann
 
 The new location of the sensors will be moved as follows:
 
-| Original |    | New | Ch No. |   |
-|:--------:|:--:|:---:|:------:|:-:|
-|    T8    | -> | Oz  |   14   |   |
-|    C4    | -> | Po4 |   4    |   |
-|    C3    | -> | Po3 |   3    |   |
-|    T7    | -> | Pz  |   13   |   |
+| Original |    | New | Ch No. |
+|:--------:|:--:|:---:|:------:|
+|    T8    | -> | Oz  |   14   |
+|    C4    | -> | Po4 |   4    |
+|    C3    | -> | Po3 |   3    |
+|    T7    | -> | Pz  |   13   |
 
  As a result, three additional electrodes placed on the occipital region and one more near the region (Pz).14
 
