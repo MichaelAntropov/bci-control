@@ -1,10 +1,9 @@
 import concurrent.futures
 import functools
-import logging
+import logging.config
 import operator
 import os
 import time
-from logging import handlers
 
 import numpy as np
 import requests
@@ -13,23 +12,16 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from src.db_entities import Recording, ProcessParameters, ProcessResult
+from src.logconfig import log_init
 
-log_folder = os.path.abspath(r'../../logs')
-
+logging.config.dictConfig(log_init.init_log_cfg(__file__))
 log = logging.getLogger(__name__)
-logging.basicConfig(encoding='utf-8',
-                    format='%(asctime)s.%(msecs)03d :: %(levelname)-8s :: [%(filename)s:%(lineno)d] %(funcName)s - %(message)s',
-                    datefmt='%Y-%m-%d:%H:%M:%S',
-                    level=logging.INFO)
 
-log_file = os.path.join(log_folder, f"log_{os.path.basename(__file__)[:-3]}_{time.strftime('%Y-%m-%d_%H-%M-%S')}.log")
-file_handler = handlers.RotatingFileHandler(log_file)
-file_handler.setFormatter(logging.root.handlers[0].formatter)
-log.addHandler(file_handler)
 
 np_base_url = 'http://127.0.0.1:6937'
 pipeline_file = os.path.abspath(r'../pipelines/SSVEP Sequential.pyp')
 max_threads = os.cpu_count()
+
 
 database_url = 'sqlite:///../../database/data/ssvep-db.sqlite'
 database_recordings_folder = os.path.abspath(r'../../database/data/recordings')
@@ -219,7 +211,6 @@ if __name__ == '__main__':
         'segmentTimeLimits': [0.14, 6],
         'trialSequence': [9, 16, 13] * 8
     }
-    log.info(f"Log folder: {log_folder}")
     log.info(f"Database recordings folder: {database_recordings_folder}")
     log.info(f"Database temp folder: {database_temp_folder}")
     log.info(f"Neuropype base url: {np_base_url}")
