@@ -18,10 +18,12 @@ session_id_to_parameters_regex = r"^(?P<set_id>\d+)_(?P<set_number>\d+)__(?P<fre
 
 def create_subject_and_flush(subject_name: str, session: Session = None) -> Subject:
     subject: Subject = Subject(name=subject_name)
-    session.flush([subject])
+    session.add(subject)
+    session.flush()
 
     subject.anonymized_name = 'subject_' + str(subject.id)
-    session.flush([subject])
+    session.add(subject)
+    session.flush()
     return subject
 
 
