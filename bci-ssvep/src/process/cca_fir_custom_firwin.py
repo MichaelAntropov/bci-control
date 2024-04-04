@@ -3,26 +3,21 @@ import functools
 import logging.config
 import operator
 import os
-import time
-from it_cca import ITCCA
 
 import numpy as np
-import requests
 from sklearn.cross_decomposition import CCA
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from src.db_entities import Recording, ProcessParameters, ProcessResult
+from src.filters import fir_firwin
 from src.logconfig import log_init
 
 logging.config.dictConfig(log_init.init_log_cfg(__file__))
 log = logging.getLogger(__name__)
 
 
-np_base_url = 'http://127.0.0.1:6937'
-pipeline_file = os.path.abspath(r'../pipelines/SSVEP_Sequential.pyp')
 max_threads = os.cpu_count()
-
 
 database_url = 'sqlite:///../../database/data/ssvep-db.sqlite'
 database_recordings_folder = os.path.abspath(r'../../database/data/recordings')
@@ -45,46 +40,14 @@ def calculate_cca(ts_1, ts_2):
     canonical_corr = np.corrcoef(X_c.T, Y_c.T)[0, 1]
     return canonical_corr
 
-def calculate_itcca(ts_1, ts_2):
-    X = ts_1
-    Y = ts_2
-    itcca = ITCCA(n_components=2, alpha=0.5)
-    itcca.fit(X, Y)
-    X_transformed = itcca.transform(X)
-    Y_transformed = itcca.transform(Y)
-    correlation_coefficient = itcca.correlation_
-    canonical_corr = np.corrcoef(X_transformed.T, Y_transformed.T)[0, 1]
-    return canonical_corr
 
-def export_csv_for_recording(np_executions_url, pipeline_path, file, frequencies, seconds, save_dir):
-    frequencies_rule = []
-
-    for freq in frequencies:
-        frequencies_rule.append({'name': f'{freq}hz.csv',
-                                 'rule': {f'trial-start-{freq}-hz': 'target-trial-begin',
-                                          f'trial-end-{freq}-hz': 'target-trial-end'}})
-
-    params_for_np = {
-        'filename': file,
-        'hz': frequencies_rule,
-        'secs': seconds,
-        'path': save_dir
-    }
-
-    pipeline_id = requests.post(np_executions_url, json={}).json()['id']
-    requests.post(url=f'{np_executions_url}/{pipeline_id}/actions/load', json={'file': pipeline_path, 'what': 'graph'})
-    requests.post(url=f'{np_executions_url}/{pipeline_id}/actions/load', json={'what': 'parameters',
-                                                                               'data': {
-                                                                                   'data': {'value': params_for_np}}})
-    requests.patch(url=f'{np_executions_url}/{pipeline_id}/state', json={'running': True, 'paused': False})
-
-    while True:
-        get_info = requests.get(url=f'{np_executions_url}/{pipeline_id}/state').json()
-        if get_info['completed']:
-            break
-        time.sleep(0.1)
-
-    requests.delete(url=f'{np_executions_url}/{pipeline_id}')
+def export_csv_for_recording(xdf_file, save_dir, frequencies, seconds, numtaps, sampling_rate, cutoff, electrode_index):
+    fir_firwin.apply_fir_firwin_and_save_csv(xdf_file, save_dir, frequencies,
+                                             seconds=seconds,
+                                             numtaps=numtaps,
+                                             sampling_rate=sampling_rate,
+                                             cutoff=cutoff,
+                                             electrode_index=electrode_index)
 
 
 def get_recordings(session: Session) -> list[Recording]:
@@ -106,7 +69,7 @@ def run_process_and_get_results_for_recording(recording: Recording, params: dict
 
     for i in params['frequencies']:
         #  [1:, 1:] needed to cut header and first column
-        frequencies_timeseries[f'{i}hz'] = np.loadtxt(os.path.join(folder_to_csv, f'{i}hz.csv'), delimiter=",", dtype=str)[1:, 1:]
+        frequencies_timeseries[f'{i}hz'] = np.loadtxt(os.path.join(folder_to_csv, f'{i}hz.csv'), delimiter=",", dtype=str)
 
     calibrations = {}
     for i in params['frequencies']:
@@ -114,7 +77,6 @@ def run_process_and_get_results_for_recording(recording: Recording, params: dict
         calibrations[f'{i}hz_2'] = frequencies_timeseries[f'{i}hz'][1]
 
     trials_to_test = {}
-    trial_results_itcca = {}
     for key in frequencies_timeseries.keys():
         trials_to_test[key] = frequencies_timeseries[key][2:]
 
@@ -125,27 +87,17 @@ def run_process_and_get_results_for_recording(recording: Recording, params: dict
                 trial_results[f'{i}hz'] = (calculate_cca(calibrations[f'{i}hz_1'],
                                                          freq_key_time_series) + calculate_cca(
                     calibrations[f'{i}hz_2'], freq_key_time_series)) / 2
-                trial_results_itcca[f'{i}hz'] = (calculate_itcca(calibrations[f'{i}hz_1'],
-                                                                 freq_key_time_series) + calculate_itcca(
-                    calibrations[f'{i}hz_2'], freq_key_time_series)) / 2
 
             guessed_frequency = max(trial_results.items(), key=operator.itemgetter(1))[0]
-            guessed_frequency_itcca = max(trial_results_itcca.items(), key=operator.itemgetter(1))[0]
             result['calculations'].append({'targetFrequency': freq_key,
                                            'calculationsResults': trial_results,
-                                           'calculationsResultsItcca': trial_results_itcca,
                                            'guessedFrequency': guessed_frequency,
-                                           'guessedFrequencyItcca': guessed_frequency_itcca,
-                                           'isCorrect': 1 if guessed_frequency == freq_key else 0,
-                                           'isCorrectItcca': 1 if guessed_frequency_itcca == freq_key else 0})
+                                           'isCorrect': 1 if guessed_frequency == freq_key else 0})
 
     result['total_trials_tested'] = len(result['calculations'])
     result['total_correct'] = functools.reduce(lambda current_total, k: current_total + k['isCorrect'],
                                                result['calculations'], 0)
-    result['total_correct_itcca'] = functools.reduce(lambda current_total, k: current_total + k['isCorrectItcca'],
-                                                     result['calculations'], 0)
     result['accuracy'] = result['total_correct'] / result['total_trials_tested']
-    result['accuracy_itcca'] = result['total_correct_itcca'] / result['total_trials_tested']
 
     notes = None
     meta = None
@@ -167,19 +119,24 @@ def run_cca_np_fir():
 
         # Prepare csv files after segmentation in temp folder
         recordings = get_recordings(session)
-        np_executions_url = np_base_url + '/executions'
 
         with concurrent.futures.ProcessPoolExecutor(max_workers=max_threads) as executor:
-            log.info(f"Submit {len(recordings)} *.xdf files to be processed into CSV through Neuropype")
+            log.info(f"Submit {len(recordings)} *.xdf files to be processed into CSV through custom filter")
             for recording in recordings:
                 abs_xdf_file_path = os.path.join(database_recordings_folder, recording.xdf_file_path)
                 folder_name = recording.xdf_file_path[:-4]
                 folder_to_save_csv = os.path.join(database_temp_folder, folder_name)
                 executor.submit(export_csv_for_recording,
                                 #  export_csv_for_recording arguments:
-                                np_executions_url, pipeline_file, abs_xdf_file_path,
-                                parameters['frequencies'], parameters['segmentTimeLimits'],
-                                folder_to_save_csv)
+                                #  parameters have to be provided directly because in executor parameters scope changes
+                                abs_xdf_file_path,
+                                folder_to_save_csv,
+                                parameters['frequencies'],
+                                tuple(parameters['segmentTimeLimits']),
+                                parameters['firParams']['numtaps'],
+                                parameters['firParams']['samplingRate'],
+                                tuple(parameters['firParams']['cutoff']),
+                                parameters['firParams']['electrodeIndex'])
 
             log.info(f"Wait for executor to finish export of CSVs")
             executor.shutdown(wait=True)
@@ -228,15 +185,20 @@ if __name__ == '__main__':
     log.info("=" * 160)
     log.info("Init processing...")
     parameters = {
-        'method': 'sklearn CCA, n_components=1, first 2 vs rest averaged, preprocessing in Neuropype',
+        'method': 'sklearn CCA, n_components=1, first 2 vs rest averaged, fir custom',
+        'firParams': {
+            'design': 'firwin',
+            'cutoff': [1, 40],
+            'samplingRate': 125,
+            'numtaps': 700,
+            'electrodeIndex': 13
+        },
         'frequencies': [9, 16, 13],
         'segmentTimeLimits': [0.14, 6],
         'trialSequence': [9, 16, 13] * 8
     }
     log.info(f"Database recordings folder: {database_recordings_folder}")
     log.info(f"Database temp folder: {database_temp_folder}")
-    log.info(f"Neuropype base url: {np_base_url}")
-    log.info(f"Pypeline file: {pipeline_file}")
     log.info(f"Max threads: {max_threads}")
     log.info(f"Parameters: {parameters}")
     run_cca_np_fir()
