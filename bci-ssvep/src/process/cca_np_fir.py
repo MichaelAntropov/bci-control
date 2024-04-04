@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 
 np_base_url = 'http://127.0.0.1:6937'
-pipeline_file = os.path.abspath(r'../pipelines/SSVEP Sequential.pyp')
+pipeline_file = os.path.abspath(r'../pipelines/SSVEP_Sequential.pyp')
 max_threads = os.cpu_count()
 
 
