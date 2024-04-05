@@ -3,7 +3,7 @@ import functools
 import logging.config
 import operator
 import os
-
+from it_cca import ITCCA
 import numpy as np
 from sklearn.cross_decomposition import CCA
 from sqlalchemy import create_engine, select
@@ -15,7 +15,6 @@ from src.logconfig import log_init
 
 logging.config.dictConfig(log_init.init_log_cfg(__file__))
 log = logging.getLogger(__name__)
-
 
 max_threads = os.cpu_count()
 
@@ -38,6 +37,18 @@ def calculate_cca(ts_1, ts_2):
     X_c, Y_c = cca.transform(X, Y)
 
     canonical_corr = np.corrcoef(X_c.T, Y_c.T)[0, 1]
+    return canonical_corr
+
+
+def calculate_itcca(ts_1, ts_2):
+    X = ts_1
+    Y = ts_2
+    itcca = ITCCA(n_components=2, alpha=0.5)
+    itcca.fit(X, Y)
+    X_transformed = itcca.transform(X)
+    Y_transformed = itcca.transform(Y)
+    correlation_coefficient = itcca.correlation_
+    canonical_corr = np.corrcoef(X_transformed.T, Y_transformed.T)[0, 1]
     return canonical_corr
 
 
@@ -69,7 +80,8 @@ def run_process_and_get_results_for_recording(recording: Recording, params: dict
 
     for i in params['frequencies']:
         #  [1:, 1:] needed to cut header and first column
-        frequencies_timeseries[f'{i}hz'] = np.loadtxt(os.path.join(folder_to_csv, f'{i}hz.csv'), delimiter=",", dtype=str)
+        frequencies_timeseries[f'{i}hz'] = np.loadtxt(os.path.join(folder_to_csv, f'{i}hz.csv'), delimiter=",",
+                                                      dtype=str)
 
     calibrations = {}
     for i in params['frequencies']:
@@ -83,26 +95,45 @@ def run_process_and_get_results_for_recording(recording: Recording, params: dict
     for freq_key, freq_time_series_arrays in trials_to_test.items():
         for freq_key_time_series in freq_time_series_arrays:
             trial_results = {}
+            trial_results_itcca = {}
+            trial_results_mix = {}
             for i in params['frequencies']:
                 trial_results[f'{i}hz'] = (calculate_cca(calibrations[f'{i}hz_1'],
                                                          freq_key_time_series) + calculate_cca(
                     calibrations[f'{i}hz_2'], freq_key_time_series)) / 2
+                trial_results_itcca[f'{i}hz'] = (calculate_itcca(calibrations[f'{i}hz_1'],
+                                                                 freq_key_time_series) + calculate_itcca(
+                    calibrations[f'{i}hz_2'], freq_key_time_series)) / 2
+                trial_results_mix[f'{i}hz'] = (trial_results[f'{i}hz'] + trial_results_itcca[f'{i}hz'])
 
             guessed_frequency = max(trial_results.items(), key=operator.itemgetter(1))[0]
+            guessed_frequency_itcca = max(trial_results_itcca.items(), key=operator.itemgetter(1))[0]
+            guessed_frequency_mix = max(trial_results_mix.items(), key=operator.itemgetter(1))[0]
             result['calculations'].append({'targetFrequency': freq_key,
                                            'calculationsResults': trial_results,
+                                           'calculationsResultsItcca': trial_results_itcca,
+                                           'calculationsResultsMix': trial_results_mix,
                                            'guessedFrequency': guessed_frequency,
-                                           'isCorrect': 1 if guessed_frequency == freq_key else 0})
+                                           'guessedFrequencyItcca': guessed_frequency_itcca,
+                                           'guessedFrequencyMixed': guessed_frequency_mix,
+                                           'isCorrect': 1 if guessed_frequency == freq_key else 0,
+                                           'isCorrectItcca': 1 if guessed_frequency_itcca == freq_key else 0,
+                                           'isCorrectMix': 1 if guessed_frequency_mix == freq_key else 0})
 
     result['total_trials_tested'] = len(result['calculations'])
     result['total_correct'] = functools.reduce(lambda current_total, k: current_total + k['isCorrect'],
                                                result['calculations'], 0)
+    result['total_correct_itcca'] = functools.reduce(lambda current_total, k: current_total + k['isCorrectItcca'],
+                                                     result['calculations'], 0)
+    result['total_correct_mix'] = functools.reduce(lambda current_total, k: current_total + k['isCorrectMix'],
+                                                   result['calculations'], 0)
     result['accuracy'] = result['total_correct'] / result['total_trials_tested']
+    result['accuracy_itcca'] = result['total_correct_itcca'] / result['total_trials_tested']
+    result['accuracy_mix'] = result['total_correct_mix'] / result['total_trials_tested']
 
     notes = None
     meta = None
     return result, notes, meta
-
 
 def run_cca_np_fir():
     log.info("Start processing...")
