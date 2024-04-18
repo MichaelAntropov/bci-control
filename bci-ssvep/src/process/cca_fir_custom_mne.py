@@ -10,7 +10,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from src.db_entities import Recording, ProcessParameters, ProcessResult
-from src.filters import fir_firwin
+from src.filters import fir_mne
 from src.logconfig import log_init
 from src.process.it_cca import ITCCA
 
@@ -55,11 +55,11 @@ def calculate_itcca(ts_1, ts_2):
 
 
 def export_csv_for_recording(xdf_file, save_dir, frequencies, seconds, sampling_rate, cutoff, electrode_index):
-    fir_firwin.apply_fir_firwin_and_save_csv(xdf_file, save_dir, frequencies,
-                                             seconds=seconds,
-                                             sampling_rate=sampling_rate,
-                                             cutoff=cutoff,
-                                             electrode_index=electrode_index)
+    fir_mne.apply_fir_firwin_and_save_csv(xdf_file, save_dir, frequencies,
+                                          seconds=seconds,
+                                          sampling_rate=sampling_rate,
+                                          cutoff=cutoff,
+                                          electrode_index=electrode_index)
 
 
 def get_recordings(session: Session) -> list[Recording]:
