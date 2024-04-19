@@ -1,3 +1,4 @@
+import logging.config
 import math
 import os
 from pathlib import Path
@@ -21,7 +22,7 @@ def apply_fir_firwin_and_save_csv(xdf_file_path, dir_to_save_csv, frequencies: l
             data_raw['markers']['names'] = stream['time_series']
             data_raw['markers']['time_stamps'] = stream['time_stamps']
 
-    filtered_data = mne.filter.filter_data(data_raw['eeg']['time_series'], sfreq=sampling_rate,
+    filtered_data = mne.filter.filter_data(data_raw['eeg']['time_series'].astype(np.float64), sfreq=sampling_rate,
                                            l_freq=cutoff[0], h_freq=cutoff[1], verbose=0, method='fir')
 
     time_stamps = data_raw['eeg']['time_stamps']
