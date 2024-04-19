@@ -1,0 +1,36 @@
+[Input]
+source = lsl
+lsl_stream = obci_eeg1
+
+[Output]
+recordings_dir = C:\recordings
+subject_id = 1
+group_id = ssvep_sequenced_6_online
+session_id = 3
+
+[Diagnostics]
+quality_check_during_task = false
+downsample_factor = 2
+
+[Study]
+study_title = SSVEP Sequenced
+inter_task_pause = 0
+insights_reports = false
+exit_on_completion = false
+show_session_notes_dialog = true
+
+[Metadata]
+
+[Window]
+window_position = 0/0
+window_size = 720x480
+no_border = true
+no_cursor = true
+fullscreen = false
+
+[Neuroscale]
+upload_to_neuroscale = false
+
+[Tasks]
+ssvep sequenced 6 online = ssvep_sequenced_6_online
+
