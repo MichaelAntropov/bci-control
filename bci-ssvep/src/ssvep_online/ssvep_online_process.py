@@ -13,7 +13,7 @@ from src.process.it_cca import ITCCA
 log: logging.Logger
 
 frequencies = [8, 9, 13, 14, 15, 16]
-cutoff = [7, 49]
+cutoff = [5, 49]
 sampling_rate = 125
 electrode_index = 13
 seconds = [0.14, 3]
@@ -66,8 +66,6 @@ def process_calibration_trials():
             data_raw['markers']['time_stamps'] = stream['time_stamps']
 
     filtered_data = signal.convolve(data_raw['eeg']['time_series'], filter_design, mode='same')
-
-    filtered_data = filtered_data
     time_stamps = data_raw['eeg']['time_stamps']
 
     markers = {}
@@ -79,10 +77,11 @@ def process_calibration_trials():
                 start = time
             if str(fr) in name[0] and 'end' in name[0] and 'test' in name[0]:
                 markers[f'{fr}hz'].append((start, time))
+                start = 0
 
     for key in markers:
         calibrations[key] = []
-        for start, end in markers[key]:
+        for start, _ in markers[key]:
             raw_start_index = np.where(time_stamps >= start)[0][0]
             start_index = raw_start_index + math.ceil(seconds[0] * sampling_rate)
             end_index = raw_start_index + sampling_rate * seconds[1]
@@ -90,6 +89,8 @@ def process_calibration_trials():
 
     for key, val in calibrations.items():
         log.info(f"Processed calibration frequency {key}: {len(calibrations[key])}")
+
+    log.debug(f"Calibrations: {calibrations}")
 
 
 def run_process_and_get_results_for_trial(markers: tuple, target_frequency: int):
@@ -106,19 +107,21 @@ def run_process_and_get_results_for_trial(markers: tuple, target_frequency: int)
             data_raw['markers']['names'] = stream['time_series']
             data_raw['markers']['time_stamps'] = stream['time_stamps']
 
-    start, end = None, None
+    start = 0
     for time, name in zip(data_raw['markers']['time_stamps'], data_raw['markers']['names']):
         if trial_start == name[0]:
             start = time
-        if trial_end == name[0]:
-            end = time
+            break
 
     start_index_raw = np.where(data_raw['eeg']['time_stamps'] >= start)[0][0]
     end_index = start_index_raw + sampling_rate * seconds[1]
 
-    filtered_data = signal.convolve(data_raw['eeg']['time_series'][start_index_raw:end_index], filter_design, mode='same')
+    log.info(f"Start index raw: {start_index_raw}; End index: {end_index}")
 
-    filtered_data = filtered_data[math.ceil(seconds[0] * sampling_rate):]
+    filtered_data = signal.convolve(data_raw['eeg']['time_series'], filter_design, mode='same')
+    final_filtered_data = filtered_data[start_index_raw + math.ceil(seconds[0] * sampling_rate):end_index]
+
+    log.debug(f"Final filtered data to test calibrations against: {final_filtered_data}")
 
     trial_results_cca = {}
     trial_results_itcca = {}
@@ -129,23 +132,27 @@ def run_process_and_get_results_for_trial(markers: tuple, target_frequency: int)
         trial_results_itcca[key] = 0
 
         for calibration_trial in calibration_list:
-            trial_results_cca[key] += calculate_cca(calibration_trial, filtered_data)
-            trial_results_itcca[key] += calculate_itcca(calibration_trial, filtered_data)
+            trial_results_cca[key] += calculate_cca(calibration_trial, final_filtered_data)
+            trial_results_itcca[key] += calculate_itcca(calibration_trial, final_filtered_data)
 
+        trial_results_cca[key] = trial_results_cca[key] / len(calibration_list)
+        trial_results_itcca[key] = trial_results_itcca[key] / len(calibration_list)
         trial_results_mix[key] = trial_results_cca[key] + trial_results_itcca[key]
 
-    guessed_frequency = max(trial_results_cca.items(), key=operator.itemgetter(1))[0]
+    guessed_frequency_cca = max(trial_results_cca.items(), key=operator.itemgetter(1))[0]
     guessed_frequency_itcca = max(trial_results_itcca.items(), key=operator.itemgetter(1))[0]
     guessed_frequency_mix = max(trial_results_mix.items(), key=operator.itemgetter(1))[0]
+
+    target_frequency = f'{target_frequency}hz'
 
     trial_result = {'targetFrequency': target_frequency,
                     'calculationsResultsCCA': trial_results_cca,
                     'calculationsResultsITCCA': trial_results_itcca,
                     'calculationsResultsMix': trial_results_mix,
-                    'guessedFrequencyCCA': guessed_frequency,
+                    'guessedFrequencyCCA': guessed_frequency_cca,
                     'guessedFrequencyITCCA': guessed_frequency_itcca,
                     'guessedFrequencyMix': guessed_frequency_mix,
-                    'isCorrectCCA': 1 if guessed_frequency == target_frequency else 0,
+                    'isCorrectCCA': 1 if guessed_frequency_cca == target_frequency else 0,
                     'isCorrectITCCA': 1 if guessed_frequency_itcca == target_frequency else 0,
                     'isCorrectMix': 1 if guessed_frequency_mix == target_frequency else 0}
 
