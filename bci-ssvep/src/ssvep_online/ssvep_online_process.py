@@ -46,7 +46,7 @@ def calculate_itcca(ts_1, ts_2):
     itcca.fit(X, Y)
     X_transformed = itcca.transform(X)
     Y_transformed = itcca.transform(Y)
-    correlation_coefficient = itcca.correlation_
+
     canonical_corr = np.corrcoef(X_transformed.T, Y_transformed.T)[0, 1]
     return canonical_corr
 
@@ -120,6 +120,12 @@ def run_process_and_get_results_for_trial(markers: tuple, target_frequency: int)
 
     filtered_data = signal.convolve(data_raw['eeg']['time_series'], filter_design, mode='same')
     final_filtered_data = filtered_data[start_index_raw + math.ceil(seconds[0] * sampling_rate):end_index]
+
+    # TODO: Figure out why filtering should be applied to the whole recording starting from the beginning
+    # buffer = math.ceil(60 * sampling_rate)
+    # data_to_filter = np.copy(data_raw['eeg']['time_series'][start_index_raw - buffer:end_index])
+    # filtered_data = signal.convolve(data_to_filter, filter_design, mode='same')
+    # final_filtered_data = filtered_data[buffer + math.ceil(seconds[0] * sampling_rate):]
 
     log.debug(f"Final filtered data to test calibrations against: {final_filtered_data}")
 
