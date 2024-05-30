@@ -223,7 +223,7 @@ if __name__ == '__main__':
         'method': 'sklearn CCA, n_components=1, first 2 vs rest averaged, fir custom',
         'firParams': {
             'design': 'remez',
-            'band': [1, 45],
+            'band': [5, 49],
             'samplingRate': 125,
             'numtaps': 70,
             'desired': [0, 1, 0],

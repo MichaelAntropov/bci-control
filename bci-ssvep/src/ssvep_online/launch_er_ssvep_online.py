@@ -9,11 +9,13 @@ server_url = "http://localhost:5000"
 
 recordings_dir = r"C:\recordings"
 group_id = "ssvep_sequenced_6_online"
-subject_id = "1"
-session_id = "1"
+subject_id = "mike_a"
+session_id = "4_2__8_9_13_14_15_16_3s_online"
+# subject_id = "mike_a"
+# session_id = "2_2__8_9_13_14_15_16_3s_arm"
 
 experiment_recorder_cmd = r"D:\ProgramFiles\Intheon\NeuroPype Academic Suite\Experiment Recorder\experiment-recorder.cmd"
-er_file = r"D:\ProgramFiles\Intheon\NeuroPype Academic Suite\Experiment Recorder\settings\custom\ssvep_sequenced_6_online.er"
+er_file = r"D:\ProgramFiles\Intheon\NeuroPype Academic Suite\Experiment Recorder\settings\custom\ssvep_sequenced_6_arm.er"
 
 
 if __name__ == '__main__':

@@ -219,7 +219,7 @@ if __name__ == '__main__':
         'method': 'sklearn CCA, n_components=1, first 2 vs rest averaged, fir custom',
         'firParams': {
             'design': 'firwin',
-            'cutoff': [1, 40],
+            'cutoff': [5, 49],
             'samplingRate': 125,
             'numtaps': 700,
             'electrodeIndex': 13

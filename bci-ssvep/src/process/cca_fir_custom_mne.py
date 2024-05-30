@@ -64,8 +64,9 @@ def export_csv_for_recording(xdf_file, save_dir, frequencies, seconds, sampling_
 
 def get_recordings(session: Session) -> list[Recording]:
     stmt = select(Recording).where(
-        (Recording.parameters['duration_s'].as_float() == 6.0)
-        & (Recording.parameters['frequencies'].as_string() == '["9","16","13"]')
+        # (Recording.parameters['duration_s'].as_float() == 3.0)
+        # &
+        (Recording.parameters['frequencies'].as_string() == '["8","9","13","14","15","16"]')
     )
 
     result = list(session.scalars(stmt).all())
@@ -223,9 +224,8 @@ if __name__ == '__main__':
             'samplingRate': 125,
             'electrodeIndex': 13
         },
-        'frequencies': [9, 16, 13],
-        'segmentTimeLimits': [0.14, 6],
-        'trialSequence': [9, 16, 13] * 8
+        'frequencies': [8, 9, 13, 14, 15, 16],
+        'segmentTimeLimits': [0, 2]
     }
     log.info(f"Database recordings folder: {database_recordings_folder}")
     log.info(f"Database temp folder: {database_temp_folder}")
